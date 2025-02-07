@@ -3,7 +3,7 @@ import {
   type Review, type InsertReview,
   type Template, type InsertTemplate,
   type StageApproval, type InsertStageApproval,
-  projects, reviews, templates, stageApprovals
+  projects, reviews, templates, stageApprovals, ProjectStage
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
@@ -42,7 +42,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createProject(project: InsertProject): Promise<Project> {
-    const [newProject] = await db.insert(projects).values(project).returning();
+    const [newProject] = await db.insert(projects).values([project]).returning();
     return newProject;
   }
 
@@ -60,17 +60,19 @@ export class DatabaseStorage implements IStorage {
     const [approval] = await db
       .select()
       .from(stageApprovals)
-      .where(and(
-        eq(stageApprovals.projectId, projectId),
-        eq(stageApprovals.stage, stage)
-      ));
+      .where(
+        and(
+          eq(stageApprovals.projectId, projectId),
+          eq(stageApprovals.stage, stage as keyof typeof ProjectStage)
+        )
+      );
     return approval;
   }
 
   async createStageApproval(approval: InsertStageApproval): Promise<StageApproval> {
     const [newApproval] = await db
       .insert(stageApprovals)
-      .values(approval)
+      .values([approval])
       .returning();
     return newApproval;
   }
@@ -83,7 +85,7 @@ export class DatabaseStorage implements IStorage {
     if (!approval) {
       approval = await this.createStageApproval({
         projectId,
-        stage,
+        stage: stage as keyof typeof ProjectStage,
         comments,
         requirements: {}
       });
@@ -98,10 +100,12 @@ export class DatabaseStorage implements IStorage {
         approvedAt: new Date(),
         comments
       })
-      .where(and(
-        eq(stageApprovals.projectId, projectId),
-        eq(stageApprovals.stage, stage)
-      ))
+      .where(
+        and(
+          eq(stageApprovals.projectId, projectId),
+          eq(stageApprovals.stage, stage as keyof typeof ProjectStage)
+        )
+      )
       .returning();
 
     return updatedApproval;
@@ -117,7 +121,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createReview(review: InsertReview): Promise<Review> {
-    const [newReview] = await db.insert(reviews).values(review).returning();
+    const [newReview] = await db.insert(reviews).values([review]).returning();
     return newReview;
   }
 
@@ -131,7 +135,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createTemplate(template: InsertTemplate): Promise<Template> {
-    const [newTemplate] = await db.insert(templates).values(template).returning();
+    const [newTemplate] = await db.insert(templates).values([template]).returning();
     return newTemplate;
   }
 }

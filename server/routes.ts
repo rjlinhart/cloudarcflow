@@ -1,7 +1,7 @@
 import { Express } from "express";
 import { createServer } from "http";
 import { storage } from "./storage";
-import { insertProjectSchema, insertReviewSchema, insertStageApprovalSchema } from "@shared/schema";
+import { insertProjectSchema, insertReviewSchema, insertStageApprovalSchema, ProjectStage } from "@shared/schema";
 
 export function registerRoutes(app: Express) {
   const router = app;
@@ -72,16 +72,19 @@ export function registerRoutes(app: Express) {
       // After successful approval, update the project's stage to the next one
       const currentProject = await storage.getProject(parseInt(req.params.id));
       if (currentProject) {
-        const stages = Object.keys(PROJECT_STAGES); // Assuming PROJECT_STAGES is defined elsewhere
-        const currentIndex = stages.indexOf(currentProject.stage);
+        const stages = Object.values(ProjectStage);
+        const currentIndex = stages.indexOf(currentProject.stage as any);
         if (currentIndex < stages.length - 1) {
           const nextStage = stages[currentIndex + 1];
-          await storage.updateProject(currentProject.id, { stage: nextStage });
+          await storage.updateProject(currentProject.id, { 
+            stage: nextStage as typeof stages[number]
+          });
         }
       }
 
       res.json(approval);
     } catch (err) {
+      console.error('Stage approval error:', err);
       res.status(500).json({ message: "Failed to approve stage" });
     }
   });
