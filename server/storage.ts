@@ -1,8 +1,11 @@
 import { 
   type Project, type InsertProject,
   type Review, type InsertReview,
-  type Template, type InsertTemplate
+  type Template, type InsertTemplate,
+  projects, reviews, templates
 } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // Projects
@@ -10,89 +13,70 @@ export interface IStorage {
   getProjects(): Promise<Project[]>;
   createProject(project: InsertProject): Promise<Project>;
   updateProject(id: number, project: Partial<Project>): Promise<Project>;
-  
+
   // Reviews
   getReview(id: number): Promise<Review | undefined>;
   getReviewsByProject(projectId: number): Promise<Review[]>;
   createReview(review: InsertReview): Promise<Review>;
-  
+
   // Templates
   getTemplate(id: number): Promise<Template | undefined>;
   getTemplates(): Promise<Template[]>;
   createTemplate(template: InsertTemplate): Promise<Template>;
 }
 
-export class MemStorage implements IStorage {
-  private projects: Map<number, Project>;
-  private reviews: Map<number, Review>;
-  private templates: Map<number, Template>;
-  private currentProjectId: number;
-  private currentReviewId: number;
-  private currentTemplateId: number;
-
-  constructor() {
-    this.projects = new Map();
-    this.reviews = new Map();
-    this.templates = new Map();
-    this.currentProjectId = 1;
-    this.currentReviewId = 1;
-    this.currentTemplateId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getProject(id: number): Promise<Project | undefined> {
-    return this.projects.get(id);
+    const [project] = await db.select().from(projects).where(eq(projects.id, id));
+    return project;
   }
 
   async getProjects(): Promise<Project[]> {
-    return Array.from(this.projects.values());
+    return await db.select().from(projects);
   }
 
   async createProject(project: InsertProject): Promise<Project> {
-    const id = this.currentProjectId++;
-    const newProject = { ...project, id, approvalStatus: false, currentStageData: {} };
-    this.projects.set(id, newProject);
+    const [newProject] = await db.insert(projects).values(project).returning();
     return newProject;
   }
 
   async updateProject(id: number, update: Partial<Project>): Promise<Project> {
-    const project = await this.getProject(id);
-    if (!project) throw new Error("Project not found");
-    
-    const updatedProject = { ...project, ...update };
-    this.projects.set(id, updatedProject);
+    const [updatedProject] = await db
+      .update(projects)
+      .set(update)
+      .where(eq(projects.id, id))
+      .returning();
+    if (!updatedProject) throw new Error("Project not found");
     return updatedProject;
   }
 
   async getReview(id: number): Promise<Review | undefined> {
-    return this.reviews.get(id);
+    const [review] = await db.select().from(reviews).where(eq(reviews.id, id));
+    return review;
   }
 
   async getReviewsByProject(projectId: number): Promise<Review[]> {
-    return Array.from(this.reviews.values())
-      .filter(review => review.projectId === projectId);
+    return await db.select().from(reviews).where(eq(reviews.projectId, projectId));
   }
 
   async createReview(review: InsertReview): Promise<Review> {
-    const id = this.currentReviewId++;
-    const newReview = { ...review, id };
-    this.reviews.set(id, newReview);
+    const [newReview] = await db.insert(reviews).values(review).returning();
     return newReview;
   }
 
   async getTemplate(id: number): Promise<Template | undefined> {
-    return this.templates.get(id);
+    const [template] = await db.select().from(templates).where(eq(templates.id, id));
+    return template;
   }
 
   async getTemplates(): Promise<Template[]> {
-    return Array.from(this.templates.values());
+    return await db.select().from(templates);
   }
 
   async createTemplate(template: InsertTemplate): Promise<Template> {
-    const id = this.currentTemplateId++;
-    const newTemplate = { ...template, id };
-    this.templates.set(id, newTemplate);
+    const [newTemplate] = await db.insert(templates).values(template).returning();
     return newTemplate;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
