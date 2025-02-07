@@ -1,7 +1,8 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Settings as SettingsIcon } from "lucide-react";
 
 export default function Settings() {
@@ -15,22 +16,43 @@ export default function Settings() {
       <div className="grid gap-6 max-w-2xl">
         <Card>
           <CardHeader>
-            <CardTitle>API Configuration</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle>Cloud Provider Integration</CardTitle>
+              <Badge variant="secondary">Coming Soon</Badge>
+            </div>
+            <CardDescription>
+              Configure your cloud provider credentials for future environment deployments
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="aws-key">AWS Access Key</Label>
-              <Input id="aws-key" type="password" placeholder="Enter AWS access key" />
+              <Input 
+                id="aws-key" 
+                type="password" 
+                placeholder="Enter AWS access key" 
+                disabled 
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="aws-secret">AWS Secret Key</Label>
-              <Input id="aws-secret" type="password" placeholder="Enter AWS secret key" />
+              <Input 
+                id="aws-secret" 
+                type="password" 
+                placeholder="Enter AWS secret key" 
+                disabled 
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="gcp-key">Google Cloud Key</Label>
-              <Input id="gcp-key" type="password" placeholder="Enter Google Cloud key" />
+              <Input 
+                id="gcp-key" 
+                type="password" 
+                placeholder="Enter Google Cloud key" 
+                disabled 
+              />
             </div>
-            <Button>Save API Keys</Button>
+            <Button disabled>Save API Keys</Button>
           </CardContent>
         </Card>
 
