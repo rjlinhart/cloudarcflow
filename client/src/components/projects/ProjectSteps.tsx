@@ -81,9 +81,10 @@ function ApproveDialog({ projectId, stage, isOpen, onClose }: ApproveDialogProps
 export function ProjectSteps({ project }: ProjectStepsProps) {
   const [approvalStage, setApprovalStage] = useState<string | null>(null);
 
+  // Query for stage approval
   const { data: stageApproval } = useQuery<StageApproval>({
     queryKey: [`/api/projects/${project.id}/stages/${project.stage}/approval`],
-    enabled: !!project.id
+    enabled: Boolean(project?.id && project?.stage)
   });
 
   const showApprovalDialog = (stage: string) => {
@@ -95,22 +96,22 @@ export function ProjectSteps({ project }: ProjectStepsProps) {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {Object.entries(PROJECT_STAGES).map(([key, stage]) => {
           const isCurrentStage = project.stage === key;
-          const isApproved = stageApproval?.approved ?? false;
+          const isCompleted = false; // TODO: Implement stage completion logic
 
           return (
             <div key={key} className="space-y-2">
               <StageCard
                 stage={key}
                 isActive={isCurrentStage}
-                isComplete={false}
+                isComplete={isCompleted}
                 {...stage}
               />
-              {isCurrentStage && !isApproved && (
+              {isCurrentStage && (
                 <Button 
                   className="w-full"
                   onClick={() => showApprovalDialog(key)}
                 >
-                  Approve Stage
+                  {stageApproval?.approved ? 'Stage Approved' : 'Approve Stage'}
                 </Button>
               )}
             </div>
