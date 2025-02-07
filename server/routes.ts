@@ -68,9 +68,21 @@ export function registerRoutes(app: Express) {
         approvedBy,
         comments
       );
+
+      // After successful approval, update the project's stage to the next one
+      const currentProject = await storage.getProject(parseInt(req.params.id));
+      if (currentProject) {
+        const stages = Object.keys(PROJECT_STAGES); // Assuming PROJECT_STAGES is defined elsewhere
+        const currentIndex = stages.indexOf(currentProject.stage);
+        if (currentIndex < stages.length - 1) {
+          const nextStage = stages[currentIndex + 1];
+          await storage.updateProject(currentProject.id, { stage: nextStage });
+        }
+      }
+
       res.json(approval);
     } catch (err) {
-      res.status(404).json({ message: "Stage approval not found" });
+      res.status(500).json({ message: "Failed to approve stage" });
     }
   });
 

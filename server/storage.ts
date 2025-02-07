@@ -76,7 +76,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async approveStage(projectId: number, stage: string, approvedBy: string, comments?: string): Promise<StageApproval> {
-    const [approval] = await db
+    // First check if approval record exists
+    let approval = await this.getStageApproval(projectId, stage);
+
+    // If no approval record exists, create one
+    if (!approval) {
+      approval = await this.createStageApproval({
+        projectId,
+        stage,
+        comments,
+        requirements: {}
+      });
+    }
+
+    // Now update the approval record
+    const [updatedApproval] = await db
       .update(stageApprovals)
       .set({
         approved: true,
@@ -89,8 +103,8 @@ export class DatabaseStorage implements IStorage {
         eq(stageApprovals.stage, stage)
       ))
       .returning();
-    if (!approval) throw new Error("Stage approval not found");
-    return approval;
+
+    return updatedApproval;
   }
 
   async getReview(id: number): Promise<Review | undefined> {
