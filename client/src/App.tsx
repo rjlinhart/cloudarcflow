@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import Dashboard from "@/pages/dashboard";
 import NewProject from "@/pages/project/new";
 import ProjectDetails from "@/pages/project/[id]";
+import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -17,6 +18,7 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/project/new" component={NewProject} />
           <Route path="/project/:id" component={ProjectDetails} />
+          <Route path="/settings" component={Settings} />
           <Route component={NotFound} />
         </Switch>
       </main>
