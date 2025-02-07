@@ -95,6 +95,7 @@ export function ProjectSteps({ project }: ProjectStepsProps) {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {Object.entries(PROJECT_STAGES).map(([key, stage]) => {
           const isCurrentStage = project.stage === key;
+          const isApproved = stageApproval?.approved ?? false;
 
           return (
             <div key={key} className="space-y-2">
@@ -104,7 +105,7 @@ export function ProjectSteps({ project }: ProjectStepsProps) {
                 isComplete={false}
                 {...stage}
               />
-              {isCurrentStage && !stageApproval?.approved && (
+              {isCurrentStage && !isApproved && (
                 <Button 
                   className="w-full"
                   onClick={() => showApprovalDialog(key)}
