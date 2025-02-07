@@ -2,10 +2,11 @@ import {
   type Project, type InsertProject,
   type Review, type InsertReview,
   type Template, type InsertTemplate,
-  projects, reviews, templates
+  type StageApproval, type InsertStageApproval,
+  projects, reviews, templates, stageApprovals
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   // Projects
@@ -13,6 +14,11 @@ export interface IStorage {
   getProjects(): Promise<Project[]>;
   createProject(project: InsertProject): Promise<Project>;
   updateProject(id: number, project: Partial<Project>): Promise<Project>;
+
+  // Stage Approvals
+  getStageApproval(projectId: number, stage: string): Promise<StageApproval | undefined>;
+  createStageApproval(approval: InsertStageApproval): Promise<StageApproval>;
+  approveStage(projectId: number, stage: string, approvedBy: string, comments?: string): Promise<StageApproval>;
 
   // Reviews
   getReview(id: number): Promise<Review | undefined>;
@@ -48,6 +54,43 @@ export class DatabaseStorage implements IStorage {
       .returning();
     if (!updatedProject) throw new Error("Project not found");
     return updatedProject;
+  }
+
+  async getStageApproval(projectId: number, stage: string): Promise<StageApproval | undefined> {
+    const [approval] = await db
+      .select()
+      .from(stageApprovals)
+      .where(and(
+        eq(stageApprovals.projectId, projectId),
+        eq(stageApprovals.stage, stage)
+      ));
+    return approval;
+  }
+
+  async createStageApproval(approval: InsertStageApproval): Promise<StageApproval> {
+    const [newApproval] = await db
+      .insert(stageApprovals)
+      .values(approval)
+      .returning();
+    return newApproval;
+  }
+
+  async approveStage(projectId: number, stage: string, approvedBy: string, comments?: string): Promise<StageApproval> {
+    const [approval] = await db
+      .update(stageApprovals)
+      .set({
+        approved: true,
+        approvedBy,
+        approvedAt: new Date(),
+        comments
+      })
+      .where(and(
+        eq(stageApprovals.projectId, projectId),
+        eq(stageApprovals.stage, stage)
+      ))
+      .returning();
+    if (!approval) throw new Error("Stage approval not found");
+    return approval;
   }
 
   async getReview(id: number): Promise<Review | undefined> {

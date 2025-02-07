@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, jsonb, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -28,6 +28,18 @@ export const projects = pgTable("projects", {
   cloudProvider: text("cloud_provider").notNull(),
 });
 
+// New table for stage approvals
+export const stageApprovals = pgTable("stage_approvals", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").notNull(),
+  stage: text("stage").notNull().$type<typeof PROJECT_STAGE_VALUES[number]>(),
+  approved: boolean("approved").default(false),
+  approvedBy: text("approved_by"),
+  approvedAt: timestamp("approved_at"),
+  comments: text("comments"),
+  requirements: jsonb("requirements"),
+});
+
 export const reviews = pgTable("reviews", {
   id: serial("id").primaryKey(),
   projectId: integer("project_id").notNull(),
@@ -48,6 +60,9 @@ export const templates = pgTable("templates", {
 export const insertProjectSchema = createInsertSchema(projects)
   .omit({ id: true, currentStageData: true, approvalStatus: true });
 
+export const insertStageApprovalSchema = createInsertSchema(stageApprovals)
+  .omit({ id: true, approved: true, approvedAt: true });
+
 export const insertReviewSchema = createInsertSchema(reviews)
   .omit({ id: true });
 
@@ -57,6 +72,8 @@ export const insertTemplateSchema = createInsertSchema(templates)
 // Types
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
+export type StageApproval = typeof stageApprovals.$inferSelect;
+export type InsertStageApproval = z.infer<typeof insertStageApprovalSchema>;
 export type Review = typeof reviews.$inferSelect;
 export type InsertReview = z.infer<typeof insertReviewSchema>;
 export type Template = typeof templates.$inferSelect;

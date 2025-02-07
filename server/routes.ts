@@ -1,7 +1,7 @@
 import { Express } from "express";
 import { createServer } from "http";
 import { storage } from "./storage";
-import { insertProjectSchema, insertReviewSchema } from "@shared/schema";
+import { insertProjectSchema, insertReviewSchema, insertStageApprovalSchema } from "@shared/schema";
 
 export function registerRoutes(app: Express) {
   const router = app;
@@ -33,6 +33,44 @@ export function registerRoutes(app: Express) {
       res.json(project);
     } catch (err) {
       res.status(404).json({ message: "Project not found" });
+    }
+  });
+
+  // Stage Approvals
+  router.get("/api/projects/:id/stages/:stage/approval", async (req, res) => {
+    const approval = await storage.getStageApproval(
+      parseInt(req.params.id),
+      req.params.stage
+    );
+    if (!approval) return res.status(404).json({ message: "Stage approval not found" });
+    res.json(approval);
+  });
+
+  router.post("/api/projects/:id/stages/:stage/approval", async (req, res) => {
+    const parsed = insertStageApprovalSchema.safeParse({
+      ...req.body,
+      projectId: parseInt(req.params.id),
+      stage: req.params.stage
+    });
+    if (!parsed.success) {
+      return res.status(400).json({ message: parsed.error });
+    }
+    const approval = await storage.createStageApproval(parsed.data);
+    res.json(approval);
+  });
+
+  router.post("/api/projects/:id/stages/:stage/approve", async (req, res) => {
+    try {
+      const { approvedBy, comments } = req.body;
+      const approval = await storage.approveStage(
+        parseInt(req.params.id),
+        req.params.stage,
+        approvedBy,
+        comments
+      );
+      res.json(approval);
+    } catch (err) {
+      res.status(404).json({ message: "Stage approval not found" });
     }
   });
 
