@@ -52,6 +52,9 @@ export default function NewProject() {
 
   return (
     <div className="container max-w-2xl py-8">
+      <head>
+        <title>New Project</title>
+      </head>
       <Card>
         <CardHeader>
           <CardTitle>Create New Project</CardTitle>

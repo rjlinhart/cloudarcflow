@@ -8,6 +8,9 @@ import { Settings as SettingsIcon } from "lucide-react";
 export default function Settings() {
   return (
     <div className="container py-8">
+      <head>
+        <title>Settings</title>
+      </head>
       <div className="flex items-center gap-2 mb-8">
         <SettingsIcon className="h-8 w-8" />
         <h1 className="text-4xl font-bold">Settings</h1>
