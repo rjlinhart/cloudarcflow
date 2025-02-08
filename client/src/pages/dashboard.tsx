@@ -17,6 +17,9 @@ export default function Dashboard() {
 
   return (
     <div className="p-8">
+      <head>
+        <title>Dashboard</title>
+      </head>
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-4xl font-bold">Projects</h1>
