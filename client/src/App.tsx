@@ -9,6 +9,7 @@ import ProjectDetails from "@/pages/project/[id]";
 import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
+// Move API configuration to a separate file: api.ts
 function Router() {
   return (
     <div className="flex h-screen">
