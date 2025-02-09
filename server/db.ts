@@ -1,3 +1,9 @@
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '../.env' });
+
+console.log('Current working directory:', process.cwd());
+console.log('Database URL:', process.env.DATABASE_URL);
+
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
